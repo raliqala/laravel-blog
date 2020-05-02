@@ -1,0 +1,38 @@
+name: PHP Composer
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+      
+    - name: Config App
+      run: |
+        cp .env.example .env
+        php artisan cache:clear
+        php artisan config:clear
+        php artisan key:generate
+        php artisan env:set DB_DATABASE=${{ secrets.DB_DATABASE }}
+        php artisan env:set DB_USERNAME=${{ secrets.DB_USERNAME }}
+        php artisan env:set DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+        php artisan env:set DB_PORT=${{ secrets.DB_PORT }}
+
+    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+    # Docs: https://getcomposer.org/doc/articles/scripts.md
+
+    # - name: Run test suite
+    #   run: composer run-script test
